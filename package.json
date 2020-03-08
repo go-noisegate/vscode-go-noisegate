@@ -19,6 +19,10 @@
 			{
 				"command": "extension.hornetHint",
 				"title": "Hornet Hint"
+			},
+			{
+				"command": "extension.hornetTest",
+				"title": "Hornet Test"
 			}
 		],
 		"configuration": {

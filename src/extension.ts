@@ -1,8 +1,12 @@
 import cp = require('child_process');
 import vscode = require('vscode');
 
+const outputChannel = vscode.window.createOutputChannel('Go Hornet');
+
 export function activate(context: vscode.ExtensionContext) {
-	let disposable = vscode.commands.registerCommand('extension.hornetHint', () => {
+	outputChannel.show(true);
+
+	context.subscriptions.push(vscode.commands.registerCommand('extension.hornetHint', () => {
 		const editor = vscode.window.activeTextEditor;
 		if (!editor) {
 			console.log('no active text editor');
@@ -12,8 +16,19 @@ export function activate(context: vscode.ExtensionContext) {
 		editor.document.save().then(async () => {
 			runHornetHint(editor.document);
 		});
-	});
-	context.subscriptions.push(disposable);
+	}));
+
+	context.subscriptions.push(vscode.commands.registerCommand('extension.hornetTest', () => {
+		const editor = vscode.window.activeTextEditor;
+		if (!editor) {
+			console.log('no active text editor');
+			return;
+		}
+
+		editor.document.save().then(async () => {
+			runHornetTest(editor);
+		});
+	}));
 
 	vscode.workspace.onDidSaveTextDocument((document) => {
 		const config = vscode.workspace.getConfiguration('gohornet', document.uri);
@@ -39,7 +54,28 @@ function runHornetHint(document: vscode.TextDocument) {
 	const offset = document.offsetAt(pos);
 	const query = document.fileName + ':#' + offset;
 	cp.spawn('hornet', ['hint', query]); // do not care the result
+
 	console.log('started hornet hint (query: ' + query + ')');
+}
+
+let currProc: cp.ChildProcess;
+
+function runHornetTest(editor: vscode.TextEditor) {
+	if (currProc) {
+		currProc.kill('SIGKILL');
+	}
+	outputChannel.clear();
+
+	const pos = editor.selection.start;
+	const offset = editor.document.offsetAt(pos);
+	const query = editor.document.fileName + ':#' + offset;
+
+	const proc = cp.spawn('hornet', ['test', query]);
+	proc.stdout.on('data', (chunk) => outputChannel.appendLine(chunk));
+	proc.stderr.on('data', (chunk) => outputChannel.appendLine(chunk));
+	currProc = proc;
+
+	console.log('started hornet test (query: ' + query + ')');
 }
 
 export function deactivate() {}
