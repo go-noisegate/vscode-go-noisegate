@@ -34,6 +34,23 @@
 					"default": true,
 					"description": "Notifies the hornet server of the changed filename and position on file save",
 					"scope": "resource"
+				},
+				"gohornet.buildTags": {
+					"type": "string",
+					"default": "",
+					"description": "A comma-separated list of build tags.",
+					"scope": "resource"
+				},
+				"gohornet.parallel": {
+					"type": "string",
+					"default": "auto",
+					"enum": [
+						"on",
+						"off",
+						"auto"
+					],
+					"description": "Enable the parallel testing. When auto, the tool automatically chooses the faster option.",
+					"scope": "resource"
 				}
 			}
 		}

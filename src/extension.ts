@@ -26,7 +26,7 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 
 		editor.document.save().then(async () => {
-			runHornetTest(editor);
+			await runHornetTest(editor);
 		});
 	}));
 
@@ -60,22 +60,34 @@ function runHornetHint(document: vscode.TextDocument) {
 
 let currProc: cp.ChildProcess;
 
-function runHornetTest(editor: vscode.TextEditor) {
-	if (currProc) {
-		currProc.kill('SIGKILL');
-	}
-	outputChannel.clear();
+async function runHornetTest(editor: vscode.TextEditor): Promise<boolean> {
+	return await new Promise<boolean>(async (resolve, reject) => {
+		if (currProc) {
+			currProc.kill('SIGKILL');
+		}
+		outputChannel.clear();
 
-	const pos = editor.selection.start;
-	const offset = editor.document.offsetAt(pos);
-	const query = editor.document.fileName + ':#' + offset;
+		const args: Array<string> = ['test'];
+		const config = vscode.workspace.getConfiguration('gohornet', editor.document.uri);
 
-	const proc = cp.spawn('hornet', ['test', query]);
-	proc.stdout.on('data', (chunk) => outputChannel.appendLine(chunk));
-	proc.stderr.on('data', (chunk) => outputChannel.appendLine(chunk));
-	currProc = proc;
+		args.push('--parallel', config['parallel']);
+		if (config['buildTags']) {
+			args.push('--tags', config['buildTags']);
+		}
 
-	console.log('started hornet test (query: ' + query + ')');
+		const pos = editor.selection.start;
+		const offset = editor.document.offsetAt(pos);
+		const query = editor.document.fileName + ':#' + offset;
+		args.push(query);
+
+		outputChannel.appendLine(`$ hornet ${args.join(' ')}`);
+
+		const proc = cp.spawn('hornet', args);
+		proc.stdout.on('data', (chunk) => outputChannel.appendLine(chunk));
+		proc.stderr.on('data', (chunk) => outputChannel.appendLine(chunk));
+		proc.on('close', (code) => resolve(code === 0));
+		currProc = proc;
+	});
 }
 
 export function deactivate() {}
