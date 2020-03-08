@@ -36,7 +36,6 @@ export function activate(context: vscode.ExtensionContext) {
 			return;
 		}
 		if (document.languageId !== 'go') {
-			console.log('not go file');
 			return;
 		}
 		runHornetHint(document);
@@ -83,8 +82,8 @@ async function runHornetTest(editor: vscode.TextEditor): Promise<boolean> {
 		outputChannel.appendLine(`$ hornet ${args.join(' ')}`);
 
 		const proc = cp.spawn('hornet', args);
-		proc.stdout.on('data', (chunk) => outputChannel.appendLine(chunk));
-		proc.stderr.on('data', (chunk) => outputChannel.appendLine(chunk));
+		proc.stdout.on('data', (chunk) => outputChannel.append(`${chunk}`));
+		proc.stderr.on('data', (chunk) => outputChannel.append(`${chunk}`));
 		proc.on('close', (code) => resolve(code === 0));
 		currProc = proc;
 	});
