@@ -7,7 +7,7 @@ Run [hornet](https://github.com/ks888/hornet) from vscode.
 Hornet is the Golang test runner for the speedster.
 
 The core features are:
-* **Change-driven**: by the editor integration, hornet knows what changes you made and runs the tests affected by these changes first.
+* **Change-driven**: by the integration with your editor, hornet knows what changes you made. It runs the tests affected by these changes first.
 * **Tuned for high-speed**: hornet implements some strategies to run the tests faster, including tests in parallel. You may disable these features for safety.
 
 ## Prerequisites

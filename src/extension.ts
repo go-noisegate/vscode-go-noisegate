@@ -1,5 +1,6 @@
 import cp = require('child_process');
 import vscode = require('vscode');
+import {addChange, getChanges, changesToString, resetChanges} from './changes';
 
 const outputChannel = vscode.window.createOutputChannel('Go Hornet');
 
@@ -40,10 +41,18 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 		runHornetHint(document);
 	}, null, context.subscriptions);
+
+	vscode.workspace.onDidChangeTextDocument((ev) => {
+		if (ev.document.languageId !== 'go') {
+			return;
+		}
+		const fileName = ev.document.fileName;
+		ev.contentChanges.forEach(ch => addChange(fileName, ch.rangeOffset, ch.rangeOffset+ch.rangeLength+ch.text.length-1));
+	}, null, context.subscriptions);
 }
 
 function runHornetHint(document: vscode.TextDocument) {
-	const editor = vscode.window.visibleTextEditors.find((e) => e.document.fileName === document.fileName)
+	const editor = vscode.window.visibleTextEditors.find((e) => e.document.fileName === document.fileName);
 	if (!editor) {
 		console.log(document.fileName + ' is not visible');
 		return;
@@ -51,7 +60,9 @@ function runHornetHint(document: vscode.TextDocument) {
 
 	const pos = editor.selection.start;
 	const offset = document.offsetAt(pos);
-	const query = document.fileName + ':#' + offset;
+	addChange(document.fileName, offset, offset);
+	const query = document.fileName + ':' + changesToString(getChanges(document.fileName));
+	resetChanges(document.fileName);
 	cp.spawn('hornet', ['hint', query]); // do not care the result
 
 	console.log('started hornet hint (query: ' + query + ')');
@@ -74,9 +85,12 @@ async function runHornetTest(editor: vscode.TextEditor): Promise<boolean> {
 			args.push('--tags', config['buildTags']);
 		}
 
+		const fileName = editor.document.fileName;
 		const pos = editor.selection.start;
 		const offset = editor.document.offsetAt(pos);
-		const query = editor.document.fileName + ':#' + offset;
+		addChange(fileName, offset, offset);
+		const query = fileName + ':' + changesToString(getChanges(fileName));
+		resetChanges(fileName);
 		args.push(query);
 
 		outputChannel.appendLine(`$ hornet ${args.join(' ')}`);
