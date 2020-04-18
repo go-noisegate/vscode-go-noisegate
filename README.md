@@ -1,126 +1,110 @@
-# go-hornet
+# Go Noise Gate
 
-Run [hornet](https://github.com/ks888/hornet) from vscode.
+VSCode extension for [Noise Gate](https://github.com/ks888/noisegate).
 
-## Features
-
-Hornet is the Golang test runner for the speedster.
-
-The core features are:
-* **Change-driven**: by the integration with your editor, hornet knows what changes you made. It runs the tests affected by these changes first.
-* **Tuned for high-speed**: hornet implements some strategies to run the tests faster, including tests in parallel. You may disable these features for safety.
+Noise Gate is the Golang test runner to get faster test results. It selects the tests affected by your recent edits and run them using `go test`.
 
 ## Prerequisites
 
 * Go 1.13 or later
-* Linux or Mac OS X
 
 ## Install
 
-1. Hornet has the server program (`hornetd`) and client program (`hornet`). Install both:
+1. The tool has the server (`gated`) and cli (`gate`). Install both:
 
-   ```
-   $ go get -u github.com/ks888/hornet/cmd/hornet && go get -u github.com/ks888/hornet/cmd/hornetd
+   ```sh
+   $ go get -u github.com/ks888/noisegate/cmd/gate && go get -u github.com/ks888/noisegate/cmd/gated
    ```
 
-2. Install the `Go Hornet` extension.
+2. Install the `Go Noise Gate` extension.
 
 By default, the extension works like this:
-* While you edit a file, the extension updates the list of changes you made.
-* When the file is saved, sends the list of changes to the hornet server.
-* When a user calls the `Hornet Test` command, it runs the tests affected by your changes first and then runs the rest.
+* While you edit a file, the extension updates the list of recent changes.
+* When the file is saved, sends the list of recent changes to the server.
+* To run the test, calls the `Noise Gate Test` command. It runs the tests affected by the recent changes.
+* To run all the tests regardless of recent changes, calls the `Noise Gate Test All` command.
 
 ## Quickstart
 
-This quickstart shows you how to use hornet to help your coding.
+This quickstart shows you how to use the Noise Gate to get faster test results.
 
 ### Set up
 
-1. Run the server program (`hornetd`) if it's not running yet.
+1. Run the server program (`gated`) if it's not running yet.
 
    ```sh
-   $ hornetd
+   $ gated
    ```
 
-2. Download the sample repository.
+2. Download the tutorial repository.
 
    ```sh
-   $ go get -u github.com/ks888/hornet-tutorial
+   $ go get -u github.com/ks888/noisegate-tutorial
    ```
 
-### Coding
+### Run your tests
 
-Let's assume you just implemented some [functions](https://github.com/ks888/hornet-tutorial/blob/master/math.go) (`SlowAdd` and `SlowSub`) and [tests](https://github.com/ks888/hornet-tutorial/blob/master/math_test.go) (`TestSlowAdd`, `TestSlowAdd_Overflow` and `TestSlowSub`) in the `hornet-tutorial` repository.
+Let's assume you just implemented some [functions](https://github.com/ks888/noisegate-tutorial/blob/master/math.go) (`SlowAdd` and `SlowSub`) and [tests](https://github.com/ks888/noisegate-tutorial/blob/master/math_test.go) (`TestSlowAdd`, `TestSlowAdd_Overflow` and `TestSlowSub`) at the `noisegate-tutorial` repository.
 
-1. Run the tests
+1. Run all the tests
 
-   Open `math.go` in the the repository root and run the `Hornet Test` command. It runs all the tests in the package.
+   First, check if all the tests are passed. Open `math.go` at the the repository root and run the `Noise Gate Test All` command.
+
 
    ```
-   $ hornet test --parallel auto /Users/yagami/go/src/github.com/ks888/hornet-tutorial/math.go:#0-0
-   Changed: []
-
-   Run affected tests:
-
-   Run other tests:
+   $ gate test -bypass /Users/yagami/go/src/github.com/ks888/noisegate-tutorial -- -v 
+   Run all tests:
    === RUN   TestSlowAdd
    --- PASS: TestSlowAdd (1.00s)
    === RUN   TestSlowAdd_Overflow
    --- PASS: TestSlowAdd_Overflow (1.00s)
    === RUN   TestSlowSub
-   --- FAIL: TestSlowSub (1.01s)
+   --- FAIL: TestSlowSub (1.00s)
        math_test.go:22: wrong result: 2
-   FAIL (1.034787789s)
+   FAIL
+   FAIL	github.com/ks888/noisegate-tutorial	3.014s
+   FAIL
    ```
 
-   * `Changed` and `Run affected tests` are empty since we don't make any changes yet.
-   * One failed test. We will fix this next.
-   * The test time is `1.034787789s` because the tests run in parallel. When you run the same tests using `go test`, it takes about 3 seconds.
+   * One failed test. We will fix this soon.
+   * The tool internally calls `go test` and the `-v` option is passed by default. See the [How-to guides](#how-to-guides) section to pass other options.
 
-2. Fix the bug
+2. Change the code
 
-   Fix [the `SlowSub` function](https://github.com/ks888/hornet-tutorial/blob/master/math.go#L12). `return a + b` at the line 12 should be `return a - b`. Then save it.
+   To fix the failed test, change [the `SlowSub` function](https://github.com/ks888/noisegate-tutorial/blob/master/math.go#L12). `return a + b` at the line 12 should be `return a - b`. Then save it.
 
-   While you edit the file, the extension updates the list of changes you made. When you save the file, it sends the list of changes to the hornet server.
+   * While you edit the file, the extension updates the list of changes.
+   * When you save the file, the extension sends the list of changes to the server. The list in this extension is now empty.
 
-3. Run the tests again
+3. Run the tests affected by the recent changes
 
-   When you run the `Hornet Test` command again, the previous hint is considered.
+   Let's check if the test is fixed. Run the `Noise Gate Test` command.
 
    ```
-   $ hornet test --parallel auto /Users/yagami/go/src/github.com/ks888/hornet-tutorial/math.go:#177-177
+   $ gate test /Users/yagami/go/src/github.com/ks888/noisegate-tutorial -- -v 
    Changed: [SlowSub]
-
-   Run affected tests:
    === RUN   TestSlowSub
    --- PASS: TestSlowSub (1.00s)
-
-   Run other tests:
-   === RUN   TestSlowAdd
-   --- PASS: TestSlowAdd (1.00s)
-   === RUN   TestSlowAdd_Overflow
-   --- PASS: TestSlowAdd_Overflow (1.00s)
-   PASS (1.031755468s)
+   PASS
+   ok  	github.com/ks888/noisegate-tutorial	1.007s
    ```
 
-   *The tool knows you've changed the `SlowSub` function and runs affected tests (`TestSlowSub`) first.*
+   * The recent changes are listed at the `Changed: [SlowSub]` line. The list is cleared when all the tests are passed.
+   * Based on the recent changes, the tool selects and runs only the `TestSlowSub` test.
+   * *You get the faster test results (`3.014s` -> `1.007s`)!*
 
 ## How-to guides
 
-### Do not run `Hornet Hint` on file save
+### Pass options to `go test`
 
-Change the `Gohornet: Hint On Save` option.
+Change the `Gonoisegate: Go Test Options` option.
 
-### Run tests in sequence
+### Run a specific test
 
-Some tests fail when they are executed in parallel. Tests are executed in sequence when the `Gohornet: Parallel` option is `off`.
+Run the `Noise Gate Test` command when the cursor points to the body of the test function.
 
-### Specify the build tags
+The current cursor position is also considered as the recent change so that we can run some test without edit.
 
-Change the `Gohornet: Build Tags` option.
+## How it works
 
-### Run the specified test
-
-Simply run the `Hornet Test` command when the cursor points to the body of the target test.
-
-Before the tests run, the command adds the position of the current cursor to the changes list, so that we can run the test to which the cursor points first without editing the file.
+See [DEVELOPMENT.md](https://github.com/ks888/noisegate/blob/master/DEVELOPMENT.md).

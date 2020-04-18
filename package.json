@@ -1,7 +1,7 @@
 {
-	"name": "go-hornet",
-	"displayName": "Go Hornet",
-	"description": "Run hornet from vscode.",
+	"name": "go-noisegate",
+	"displayName": "Go Noise Gate",
+	"description": "Go test runner to get faster test results",
 	"version": "0.1.0",
 	"engines": {
 		"vscode": "^1.42.0"
@@ -14,42 +14,39 @@
     	"onLanguage:go"
 	],
 	"main": "./out/extension.js",
+	"repository": {
+        "type": "git",
+        "url": "https://github.com/ks888/vscode-go-noisegate"
+    },
 	"contributes": {
 		"commands": [
 			{
-				"command": "extension.hornetHint",
-				"title": "Hornet Hint"
+				"command": "extension.noisegateHint",
+				"title": "Noise Gate Hint"
 			},
 			{
-				"command": "extension.hornetTest",
-				"title": "Hornet Test"
+				"command": "extension.noisegateTest",
+				"title": "Noise Gate Test"
+			},
+			{
+				"command": "extension.noisegateTestAll",
+				"title": "Noise Gate Test All"
 			}
 		],
 		"configuration": {
 			"type": "object",
-			"title": "Go Hornet",
+			"title": "Go Noise Gate",
 			"properties": {
-				"gohornet.hintOnSave": {
+				"gonoisegate.hintOnSave": {
 					"type": "boolean",
 					"default": true,
-					"description": "Notifies the hornet server of the changed filename and position on file save",
+					"description": "Send the list of recent changes to the server on file save",
 					"scope": "resource"
 				},
-				"gohornet.buildTags": {
+				"gonoisegate.goTestOptions": {
 					"type": "string",
-					"default": "",
-					"description": "A comma-separated list of build tags.",
-					"scope": "resource"
-				},
-				"gohornet.parallel": {
-					"type": "string",
-					"default": "auto",
-					"enum": [
-						"on",
-						"off",
-						"auto"
-					],
-					"description": "Enable the parallel testing. When auto, the tool automatically chooses the faster option.",
+					"default": "-v ",
+					"description": "Options passed to the 'go test' command.",
 					"scope": "resource"
 				}
 			}

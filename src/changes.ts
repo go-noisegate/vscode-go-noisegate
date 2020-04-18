@@ -1,4 +1,4 @@
-type ChangesInFile = Array<[number, number]>; // both inclusive
+export type ChangesInFile = Array<[number, number]>; // both inclusive
 
 let changes: Record<string, ChangesInFile> = {};
 
