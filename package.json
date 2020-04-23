@@ -16,7 +16,7 @@
 	"main": "./out/extension.js",
 	"repository": {
         "type": "git",
-        "url": "https://github.com/ks888/vscode-go-noisegate"
+        "url": "https://github.com/go-noisegate/vscode-go-noisegate"
     },
 	"contributes": {
 		"commands": [
