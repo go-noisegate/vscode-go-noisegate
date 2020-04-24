@@ -3,7 +3,7 @@
 	"displayName": "Go Noise Gate",
 	"description": "Go test runner to get faster test results",
 	"publisher": "go-noisegate",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"engines": {
 		"vscode": "^1.42.0"
 	},
