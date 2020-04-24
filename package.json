@@ -4,7 +4,7 @@
 	"description": "Go test runner to get faster test results",
 	"publisher": "go-noisegate",
 	"icon": "images/go-logo-black.png",
-	"version": "0.1.2",
+	"version": "0.1.3",
 	"engines": {
 		"vscode": "^1.42.0"
 	},

@@ -2,11 +2,14 @@ import cp = require('child_process');
 import vscode = require('vscode');
 import path = require('path');
 import {ChangesInFile, addChange, getChanges, changesToString, resetChanges} from './changes';
+import {findGateCommand} from './utils';
 
 const outputChannel = vscode.window.createOutputChannel('Go Noise Gate');
+let gateCommand = 'gate';
 
 export function activate(context: vscode.ExtensionContext) {
 	outputChannel.show(true);
+	gateCommand = findGateCommand();
 
 	context.subscriptions.push(vscode.commands.registerCommand('extension.noisegateHint', () => {
 		const editor = vscode.window.activeTextEditor;
@@ -78,9 +81,13 @@ export function activate(context: vscode.ExtensionContext) {
 async function runNoiseGateHint(document: vscode.TextDocument, changes: ChangesInFile): Promise<boolean> {
 	return await new Promise<boolean>(async (resolve, reject) => {
 		const query = document.fileName + ':' + changesToString(changes);
-		const proc = cp.spawn('gate', ['hint', query]);
+		const proc = cp.spawn(gateCommand, ['hint', query]);
 		proc.stdout.on('data', (chunk) => console.log(`${chunk}`));
-		proc.stderr.on('data', (chunk) => console.log(`${chunk}`));
+		proc.stderr.on('data', (chunk) => console.error(`${chunk}`));
+		proc.on('error', (err) => {
+			console.error(`failed to start gate command (${gateCommand}): ${err}`);
+			resolve(false);
+		});
 		proc.on('close', (code) => resolve(code === 0));
 
 		console.log('started gate hint ' + query);
@@ -110,9 +117,13 @@ async function runNoiseGateTest(editor: vscode.TextEditor, all: boolean): Promis
 
 		outputChannel.appendLine(`$ gate ${args.join(' ')}`);
 
-		const proc = cp.spawn('gate', args);
+		const proc = cp.spawn(gateCommand, args);
 		proc.stdout.on('data', (chunk) => outputChannel.append(`${chunk}`));
 		proc.stderr.on('data', (chunk) => outputChannel.append(`${chunk}`));
+		proc.on('error', (err) => {
+			outputChannel.appendLine(`failed to start gate command (${gateCommand}): ${err}`);
+			resolve(false);
+		});
 		proc.on('close', (code) => resolve(code === 0));
 		currProc = proc;
 	});
