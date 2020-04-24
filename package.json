@@ -2,6 +2,7 @@
 	"name": "go-noisegate",
 	"displayName": "Go Noise Gate",
 	"description": "Go test runner to get faster test results",
+	"publisher": "go-noisegate",
 	"version": "0.1.0",
 	"engines": {
 		"vscode": "^1.42.0"
@@ -11,13 +12,13 @@
 	],
 	"activationEvents": [
 		"workspaceContains:**/*.go",
-    	"onLanguage:go"
+		"onLanguage:go"
 	],
 	"main": "./out/extension.js",
 	"repository": {
-        "type": "git",
-        "url": "https://github.com/go-noisegate/vscode-go-noisegate"
-    },
+		"type": "git",
+		"url": "https://github.com/go-noisegate/vscode-go-noisegate"
+	},
 	"contributes": {
 		"commands": [
 			{
